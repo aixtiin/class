@@ -104,3 +104,49 @@ create table factor
     cat_id int constraint FK__factor_category_id foreign key references category(cat_id)
 )
 go
+
+insert into agent (a_name, a_phone, a_email, a_address)
+values ('agent1_name', '1234567890', 'agent1@gmail.com', 'agent1_address')
+
+insert into client (c_fname, c_lname, c_number, c_email)
+values ('client1_fname', 'client1_lname', '0987654321', 'client1@gmail.com')
+
+insert into category (cat_name)
+values ('category1')
+
+insert into property (p_address, p_city, p_size, p_bedroom, p_parking, p_sale_rent, cat_id)
+values ('property1_address', 'property1_city', 2000, 4, 2, 1, 10)
+
+insert into sale (a_id, c_id, p_id, s_date, s_price)
+values (100, 10, 10000, '2024-11-01', 30000)
+
+insert into rentdetails (a_id, r_period, r_start_date, r_end_date, r_payment_due, r_payment_received, r_amount_paid, r_amount_due, r_status)
+values (100, 365, '2024-11-01', '2025-11-01', '2024-12-01', '2024-12-01', 1200, 1200, 'OnTime')
+
+insert into rent (p_id, c_id, a_id, r_period, r_price)
+values (10000, 10, 100, 1, 1500)
+
+insert into client_preferences (cat_id, cp_location, cp_min, cp_max, cp_bedroom_min, cp_bedroom_max, cp_parking_min, cp_parking_max)
+values (10, 'cp1_location', 1500, 3000, 2, 5, 1, 3)
+
+insert into recommendation (p_id, c_id)
+values (10000, 10)
+
+insert into factor (p_id, f_total, f_amount, cat_id)
+values (10000, 250000, 150, 10)
+
+select * 
+from property 
+where p_city = 'property1_city'
+
+select * 
+from sale 
+where s_price > 25000
+
+select * 
+from rentdetails 
+where r_status = 'OnTime'
+
+select * 
+from property 
+where cat_id = 10
