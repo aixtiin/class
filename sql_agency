@@ -1,22 +1,3 @@
-create database agency
-on
-(
-name='agency_data',
-filename='d:\db\agency_data.mdf',
-size=8 mb,
-filegrowth=50mb
-)
-log on
-(
-name='agency_log',
-filename='d:\db\agency_log.ldf',
-size=8 mb,
-filegrowth=50mb,
-maxsize=1gb
-)
-go
-use agency
-
 go
 create table agent
 (
@@ -26,74 +7,78 @@ a_phone char(15),
 a_email nvarchar(max),
 a_address nvarchar(max)
 )
-
 go
+
 create table client
 (
-c_id int constraint PK__client_id primary key,
+c_id int identity(10,1) constraint PK__client_id primary key,
 c_fname nvarchar(40) not null,
 c_lname nvarchar(40) not null,
 c_number char(15),
 c_email nvarchar(max)
 )
-
 go
+
 create table category
 (
 cat_id int identity (10,1) constraint PK__category_id primary key,
 cat_name nvarchar(40)
 )
-
 go
+
 create table property
 (
 property_id int identity(10000,1) constraint PK__property_id primary key,
-p_address nvarchar(max),
+p_address nvarchar(MAX),
 p_city nvarchar(40),
 p_size int,
 p_bedroom int,
 p_parking int,
 p_sale_rent bit,
-a_id int constraint FK__agent_id foreign key references agent(a_id)
+cat_id int constraint FK__property_category_id foreign key references category(cat_id)
 )
-
 go
+
 create table sale
 (
 s_id int identity(1,1) constraint PK__sale_id primary key,
-a_id int constraint FK__agent_id foreign key references agent(a_id),
-c_id int constraint FK__client_id foreign key references client(c_id),
-p_id int constraint FK__property_id foreign key references property(p_id),
-sale_date date,
-sale_price money constraint CH__sale_price check(sale_price >= 1000)
+a_id int constraint FK__sale_agent_id foreign key references agent(a_id),
+c_id int constraint FK__sale_client_id foreign key references client(c_id),
+p_id int constraint FK__sale_property_id foreign key references property(property_id),
+s_date date,
+s_price money constraint CH__s_price check (s_price >= 1000)
 )
-
 go
+
 create table rentdetails
 (
+a_id int constraint FK__rentdetails_agent_id foreign key references agent(a_id),
 r_period int constraint PK__rentdetails_period primary key,
-r_start_date date constraint DF__rentdetails_start_date default getdate(),
-r_end_date date constraint DF__rentdetails_end_date default getdate(),
-r_payment_due date constraint DF__rentdetails_due_date default getdate(),
-r_payment_received date constraint DF__rentdetails_received_date default getdate(),
-r_amount_paid money constraint CH__rentdetails_paid check(r_amount_paid >=1000),
-r_amount_due money constraint CH__rentdetails_due check(r_amount_due >=1000),
+r_start_date date constraint DF__rentdetails_start_date default GETDATE(),
+r_end_date date constraint DF__rentdetails_end_date default GETDATE(),
+r_payment_due date constraint DF__rentdetails_due_date default GETDATE(),
+r_payment_received date constraint DF__rentdetails_received_date default GETDATE(),
+r_amount_paid money constraint CH__rentdetails_paid check(r_amount_paid >= 1000),
+r_amount_due money constraint CH__rentdetails_due check (r_amount_due >= 1000),
 r_status nvarchar(40)
 )
 go
+
 create table rent
 (
 r_id int identity(1,1) constraint PK__rent_id primary key,
-p_id int constraint FK__property_id foreign key references property(p_id),
-c_id int constraint FK__client_id foreign key references client(c_id),
-a_id int constraint FK__agent_id foreign key references agent(a_id),
-r_period int constraint FK__rentdetails_period foreign key references rentdetails(r_payment_due),
+p_id int constraint FK__rent_property_id foreign key references property(property_id),
+c_id int constraint FK__rent_client_id foreign key references client(c_id),
+a_id int constraint FK__rent_agent_id foreign key references agent(a_id),
+r_period int constraint FK__rent_period_id foreign key references rentdetails(r_period),
 r_price money
 )
 go
+
 create table client_preferences
 (
-cat_id int constraint FK__category_id foreign key references category(cat_id),
+cp_id int identity(1,1) constraint PK__preferences_id primary key,
+cat_id int constraint FK__client_preferences_category_id foreign key references category(cat_id),
 cp_location nvarchar(max),
 cp_min int,
 cp_max int,
@@ -102,46 +87,66 @@ cp_bedroom_max int,
 cp_parking_min int,
 cp_parking_max int
 )
-
 go
-create table reccomendation
+
+create table recommendation
 (
-p_id int constraint FK__property_id foreign key references property(p_id),
-c_id int constraint FK__client_id foreign key references client(c_id)
+p_id int constraint FK__recommendation_property_id foreign key references property(property_id),
+c_id int constraint FK__recommendation_client_id foreign key references client(c_id)
 )
-
 go
+
 create table factor
 (
-p_id int constraint FK__property_id foreign key references property(p_id),
-f_total money constraint CH__factor_total check(f_total>=1000),
+p_id int constraint FK__factor_property_id foreign key references property(property_id),
+f_total money constraint CH__factor_total check (f_total >= 1000),
 f_amount int,
-cat_id int constraint FK__category_id foreign key references category(cat_id)
+cat_id int constraint FK__factor_category_id foreign key references category(cat_id)
 )
+go
 
-insert into category (cat_id, cat_name)
-values (11, 'Residential')
+insert into agent (a_name, a_phone, a_email, a_address)
+values ('agent1_name', '1234567890', 'agent1@gmail.com', 'agent1_address')
 
-insert into agent (a_id, a_name, a_phone, a_email, a_address)
-values (101, 'agent1', '123456789', 'agent1@gmail.com', 'address1')
+insert into client (c_fname, c_lname, c_number, c_email)
+values ('client1_fname', 'client1_lname', '0987654321', 'client1@gmail.com')
 
-insert into client (c_id, c_fname, c_lname, c_number, c_email)
-values (1001, 'client1_fname', 'client1_lname', '987654321', 'client1@gmail.com')
+insert into category (cat_name)
+values ('category1')
 
-insert into property (property_id, p_address, p_city, p_size, p_bedroom, p_parking, p_sale_rent, a_id, cat_id)
-values (10001, 'property1_address', 'property1_city', 1500, 3, 1, 1, 0, 1, 11)
+insert into property (p_address, p_city, p_size, p_bedroom, p_parking, p_sale_rent, cat_id)
+values ('property1_address', 'property1_city', 2000, 4, 2, 1, 10)
 
-insert into sale (s_id, a_id, c_id, p_id, sale_date, sale_price)
-values (1, 1, 1, 1, '2024-11-01', 200000)
+insert into sale (a_id, c_id, p_id, s_date, s_price)
+values (100, 10, 10000, '2024-11-01', 30000)
 
-insert into rentdetails (r_period, r_start_date, r_end_date, r_payment_due, r_payment_received, r_amount_paid, r_amount_due, r_status)
-values (1, '2024-11-01', '2025-11-01', '2024-12-01', '2024-12-01', 1200, 1200, 'OnTime')
+insert into rentdetails (a_id, r_period, r_start_date, r_end_date, r_payment_due, r_payment_received, r_amount_paid, r_amount_due, r_status)
+values (100, 365, '2024-11-01', '2025-11-01', '2024-12-01', '2024-12-01', 1200, 1200, 'OnTime')
 
-insert into rent (r_id, p_id, c_id, a_id, r_period, r_price)
-values (1, 1, 1, 1, 1, 1200)
+insert into rent (p_id, c_id, a_id, r_period, r_price)
+values (10000, 10, 100, 1, 1500)
 
 insert into client_preferences (cat_id, cp_location, cp_min, cp_max, cp_bedroom_min, cp_bedroom_max, cp_parking_min, cp_parking_max)
-values (11, 'location1', 1000, 2000, 2, 4, 1, 2)
+values (10, 'cp1_location', 1500, 3000, 2, 5, 1, 3)
 
 insert into recommendation (p_id, c_id)
-values (10001, 11)
+values (10000, 10)
+
+insert into factor (p_id, f_total, f_amount, cat_id)
+values (10000, 250000, 150, 10)
+
+select * 
+from property 
+where p_city = 'property1_city'
+
+select * 
+from sale 
+where s_price > 25000
+
+select * 
+from rentdetails 
+where r_status = 'OnTime'
+
+select * 
+from property 
+where cat_id = 10
